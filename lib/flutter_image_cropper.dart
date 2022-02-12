@@ -5,65 +5,16 @@ import 'package:flutter_image_cropper/crop_image.dart';
 import 'controller/crop_controller.dart';
 import 'utilities/crop_grid.dart';
 
-/// Widget to crop images.
-///
-/// See also:
-///
-///  * [CropController] to control the functioning of this widget.
 class CropImage extends StatefulWidget {
-  /// Controls the crop values being applied.
-  ///
-  /// If null, this widget will create its own [CropController]. If you want to specify initial values of
-  /// [aspectRatio] or [defaultCrop], you need to use your own [CropController].
-  /// Otherwise, [aspectRatio] will not be enforced and the [defaultCrop] will be the full image.
   final CropController? controller;
-
-  /// The image to be cropped.
   final Image image;
-
-  /// The crop grid color.
-  ///
-  /// Defaults to 70% white.
   final Color gridColor;
-
-  /// The size of the corner of the crop grid.
-  ///
-  /// Defaults to 25.
   final double gridCornerSize;
-
-  /// The width of the crop grid thin lines.
-  ///
-  /// Defaults to 2.
   final double gridThinWidth;
-
-  /// The width of the crop grid thick lines.
-  ///
-  /// Defaults to 5.
   final double gridThickWidth;
-
-  /// The crop grid scrim (outside area overlay) color.
-  ///
-  /// Defaults to 54% black.
   final Color scrimColor;
-
-  /// True if third lines of the crop grid are always displayed.
-  /// False if third lines are only displayed while the user manipulates the grid.
-  ///
-  /// Defaults to false.
   final bool alwaysShowThirdLines;
-
-  /// Event called when the user changes the crop rectangle.
-  ///
-  /// The passed [Rect] is normalized between 0 and 1.
-  ///
-  /// See also:
-  ///
-  ///  * [CropController], which can be used to read this and other details of the crop rectangle.
   final ValueChanged<Rect>? onCrop;
-
-  /// The minimum pixel size the crop rectangle can be shrunk to.
-  ///
-  /// Defaults to 100.
   final double minimumImageSize;
 
   const CropImage({
@@ -109,12 +60,14 @@ class CropImage extends StatefulWidget {
         .add(DiagnosticsProperty<double>('minimumImageSize', minimumImageSize));
   }
 
-  static cropImage({required BuildContext context, required Image image}) {
-    Navigator.push(
+  static cropImage(
+      {required BuildContext context, required Image image}) async {
+    var cropImage = await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => CropTheImage(image: image),
         ));
+    return cropImage;
   }
 }
 
@@ -286,7 +239,7 @@ class _CropImageState extends State<CropImage> {
         assert(false);
     }
 
-    if (controller.aspectRatio != null) {
+    if (controller.aspectRatio != 0) {
       final width = right - left;
       final height = bottom - top;
       if (width / height > controller.aspectRatio!) {

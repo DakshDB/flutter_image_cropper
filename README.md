@@ -10,9 +10,9 @@ Simple image cropper
 Example for the usage is included in the `/example` folder.
 
 
-```dart
-CropImage.cropImage(
-                      context: context,
-                      image: Image.asset('images/test_image.jpg'));
+```
+var image = await CropImage.cropImage(
+    context: context,
+    image: Image.asset('images/test_image.jpg'));
 ```
 

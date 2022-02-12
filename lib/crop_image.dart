@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_image_cropper/widgets/custom_button.dart';
 
 import 'controller/crop_controller.dart';
 import 'flutter_image_cropper.dart';
@@ -39,21 +40,17 @@ class _CropTheImageState extends State<CropTheImage> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          TextButton(
-            child: const Text('Reset'),
-            onPressed: () {
-              controller.aspectRatio = 1.0;
-              controller.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
-            },
-          ),
+          CustomButton(
+              onPressed: () {
+                controller.aspectRatio = 1.0;
+                controller.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
+              },
+              buttonText: "Reset"),
           IconButton(
             icon: const Icon(Icons.aspect_ratio),
             onPressed: _aspectRatios,
           ),
-          TextButton(
-            onPressed: _finished,
-            child: const Text('Done'),
-          ),
+          CustomButton(onPressed: _finished, buttonText: "Done"),
         ],
       );
 
@@ -80,33 +77,76 @@ class _CropTheImageState extends State<CropTheImage> {
               onPressed: () => Navigator.pop(context, 16.0 / 9.0),
               child: const Text('16:9'),
             ),
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 9.0 / 16.0),
+              child: const Text('9:16'),
+            ),
+            SimpleDialogOption(
+              onPressed: () => Navigator.pop(context, 0.00),
+              child: const Text("Free"),
+            ),
           ],
         );
       },
     );
-    if (value != null) {
-      controller.aspectRatio = value;
-      controller.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
-    }
+    controller.aspectRatio = value;
+    controller.crop = const Rect.fromLTRB(0.1, 0.1, 0.9, 0.9);
   }
 
   Future<void> _finished() async {
-    final image = await controller.croppedImage();
+    final image = await controller.croppedBitmap();
+    double aspectRatio = image.width / image.height;
+    double height, width;
+    if (aspectRatio > 1) {
+      width = MediaQuery.of(context).size.width / 3;
+      height = width / aspectRatio;
+    } else {
+      height = MediaQuery.of(context).size.height / 2;
+      width = height * aspectRatio;
+    }
+
     await showDialog<bool>(
       context: context,
       builder: (context) {
         return SimpleDialog(
           contentPadding: const EdgeInsets.all(6.0),
           titlePadding: const EdgeInsets.all(8.0),
-          title: const Text('Cropped image'),
+          title: const Padding(
+            padding: EdgeInsets.all(8.0),
+            child: Text(
+              'Preview',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ),
           children: [
-            Text('relative: ${controller.crop}'),
-            Text('pixels: ${controller.cropSize}'),
-            const SizedBox(height: 5),
-            image,
-            TextButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('OK'),
+            const SizedBox(height: 10),
+            SizedBox(
+                height: height,
+                width: width,
+                child: Image(
+                  image: UiImageProvider(image),
+                  fit: BoxFit.contain,
+                )),
+            const SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CustomButton(
+                      onPressed: () {
+                        Navigator.pop(context, true);
+                      },
+                      buttonText: "Stay"),
+                  CustomButton(
+                      onPressed: () {
+                        Navigator.pop(context, true);
+                        Navigator.pop(context, image);
+                      },
+                      buttonText: "Done")
+                ],
+              ),
             ),
           ],
         );
